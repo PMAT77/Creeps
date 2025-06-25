@@ -17,14 +17,11 @@ export interface Position {
 
 /** 游戏实体类 */
 export default class Entity {
-  private targetPos: Position; // 目标位置 
-  private currentPos: Position; // 当前位置
+  public markForRemoval = false; // 标记是否需要删除
 
-  // 新增呼吸效果属性
-  private breathPhase = 0;
-  private baseSize: number;
-  private readonly breathAmplitude = 0.3;
-  private readonly breathSpeed = 6;
+  public targetPos: Position; // 目标位置 
+  public currentPos: Position; // 当前位置
+
 
   x: number;
   y: number;
@@ -37,18 +34,21 @@ export default class Entity {
     this.y = y;
     this.width = width;
     this.height = height;
-
-    this.baseSize = width;
-
     this.targetPos = { x: Number(x), y: Number(y) };
     this.currentPos = { x: Number(x), y: Number(y) };
 
-    // 修复3：防御性数值检查
     if (isNaN(this.x) || isNaN(this.y)) {
       console.error('坐标初始化异常', { x, y });
       this.x = this.targetPos.x = 0;
       this.y = this.targetPos.y = 0;
     }
+  }
+
+  get centerPoint(): Position {
+    return {
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2
+    };
   }
 
   /** 核心逻辑方法 */
@@ -79,7 +79,7 @@ export default class Entity {
     };
   }
 
-  /** 更新单位位置 */
+  /** 更新移动位置 */
   private updateMovement(canvas?: HTMLCanvasElement): void {
     const canvasWidth = Number(canvas?.width) || 800;
     const canvasHeight = Number(canvas?.height) || 600;
@@ -92,26 +92,9 @@ export default class Entity {
     [this.x, this.y] = [this.currentPos.x, this.currentPos.y];
   }
 
-  /** 是否处于 Idle 状态 */
-  private isIdle(): boolean {
-    return Math.abs(this.targetPos.x - this.currentPos.x) < 0.1 &&
-      Math.abs(this.targetPos.y - this.currentPos.y) < 0.1;
-  }
 
-  get centerPoint(): Position {
-    return {
-      x: this.x + this.width / 2,
-      y: this.y + this.height / 2
-    };
-  }
-
-  update(canvas?: HTMLCanvasElement): void {
+  update(canvas?: HTMLCanvasElement, deltaTime?: number): void {
     try {
-      // 新增呼吸动画更新
-      if (this.isIdle()) {
-        this.breathPhase += gameState.deltaTime * this.breathSpeed;
-      }
-
       const direction = this.calculateMovement();
       this.targetPos.x += direction.x * this.speed;
       this.targetPos.y += direction.y * this.speed;
@@ -123,43 +106,5 @@ export default class Entity {
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
-    const center = this.centerPoint;
-
-    ctx.save();
-    // 应用呼吸缩放（保持中心点）
-    const scale = 1 + Math.sin(this.breathPhase) * this.breathAmplitude / this.baseSize;
-    ctx.translate(center.x, center.y);
-    ctx.scale(scale, scale)
-    ctx.translate(-center.x, -center.y);
-
-    // 中心能量容器
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, this.width / 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#555555';
-    ctx.fill();
-
-    // 能量容器壁
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, this.width / 2 + 1, 0, Math.PI * 2);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#000000';
-    ctx.stroke();
-
-    // 肌肉
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, this.width / 2 + 3, 0, Math.PI * 2);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = '#222222';
-    ctx.stroke();
-
-    // 皮肤
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, this.width / 2 + 6, 0, Math.PI * 2);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#555555';
-    ctx.stroke();
-
-    ctx.restore();
-  }
+  draw(ctx: CanvasRenderingContext2D): void { }
 }

@@ -1,4 +1,3 @@
-import Console from '../layout/ui/console';
 import { Creep } from './creep';
 import Entity from './entity';
 
@@ -21,6 +20,7 @@ export interface GameState {
   deltaTime: number;
   lastFrameTime: number;
   updateDeltaTime: () => void;
+  addEntity(entity: Entity): void;
 }
 
 export const gameState: GameState = {
@@ -34,22 +34,34 @@ export const gameState: GameState = {
     // 修复1：确保时间差计算基于相邻两帧
     this.deltaTime = (now - this.lastFrameTime) / 1000;
     this.lastFrameTime = now; // 必须更新最后帧时间
-  }
+  },
+  addEntity(entity: Entity) {
+    this.entities.push(entity);
+  },
 }
+
 
 // 游戏主类 - 封装相关功能
 export class GameController {
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private animationId: number | null = null;
+  private debugMode = true; // 新增调试模式状态
 
   constructor() {
     this.initialize();
   }
 
-  // 新增调试模式状态
-  private debugMode = true;
+  private spawnInitialEntities(): void {
+    if (!this.ctx) return;
+    if (!this.canvas || !this.ctx) return;
 
+    const creep = new Creep(400, 400, 15, 15);
+    creep.draw(this.ctx);
+    gameState.entities.push(creep);
+  }
+
+  /** 初始化实体 */
   private async initialize(): Promise<void> {
     try {
       await this.waitForDOMReady();
@@ -59,10 +71,10 @@ export class GameController {
       this.animationId = requestAnimationFrame(ts => this.gameLoop(ts));
     } catch (error) {
       console.error('游戏初始化失败:', error);
-      this.showErrorModal('游戏初始化失败，请刷新页面重试');
     }
   }
 
+  /** 等待DOM内容加载完成 */
   private async waitForDOMReady(): Promise<void> {
     if (document.readyState !== 'complete') {
       await new Promise(resolve => {
@@ -78,6 +90,7 @@ export class GameController {
     }
   }
 
+  /** 设置游戏画布 */
   private setupCanvas(): void {
     const canvas = document.querySelector('#GameCanvas');
     if (!(canvas instanceof HTMLCanvasElement)) {
@@ -120,6 +133,7 @@ export class GameController {
     this.canvas.style.height = `${rect.height}px`;
   }
 
+  /** 设置事件监听 */
   private setupEventListeners(): void {
     // 使用箭头函数确保this上下文正确
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -143,20 +157,26 @@ export class GameController {
     window.addEventListener('beforeunload', cleanup);
   }
 
-  private spawnInitialEntities(): void {
+  /** 绘制调试信息 */
+  private drawDebugInfo(frameTime: number): void {
     if (!this.ctx) return;
-    if (!this.canvas || !this.ctx) return;
 
-    const creep = new Creep(400, 400, 15, 15);
-    creep.draw(this.ctx);
-    gameState.entities.push(creep);
+    this.ctx.fillStyle = 'yellow';
+    this.ctx.font = '12px monospace';
+    this.ctx.fillText(`实体数量: ${gameState.entities.length}`, 10, 20);
+    this.ctx.fillText(`帧耗时: ${frameTime.toFixed(2)}ms`, 10, 35);
+    this.ctx.fillText(`FPS: ${(1000 / frameTime).toFixed(1)}`, 10, 50);
   }
 
-  private renderUI(ctx) {
-    const consoleUI = new Console(0, 0, 200, 100);
-    consoleUI.draw(ctx);
+  /** 停止游戏主循环 */
+  private stopGameLoop(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
   }
 
+  /** 游戏主循环 */
   private gameLoop(timestamp: number): void {
     gameState.updateDeltaTime();
 
@@ -170,15 +190,15 @@ export class GameController {
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // 渲染UI界面
-    // this.renderUI(this.ctx)
-
     // 分批处理实体更新
     const BATCH_SIZE = 100;
     for (let i = 0; i < gameState.entities.length; i += BATCH_SIZE) {
+      gameState.entities = gameState.entities.filter(entity => {
+        return !entity.markForRemoval; // 保留未标记删除的实体
+      });
       const batch = gameState.entities.slice(i, i + BATCH_SIZE);
       batch.forEach(entity => {
-        entity.update(this.canvas!);
+        entity.update(this.canvas!, gameState.deltaTime); // 传递canvas参数
         entity.draw(this.ctx!);
       });
     }
@@ -187,39 +207,6 @@ export class GameController {
     if (this.debugMode) {
       this.drawDebugInfo(performance.now() - startTime);
     }
-
     this.animationId = requestAnimationFrame(ts => this.gameLoop(ts));
-  }
-
-  private drawDebugInfo(frameTime: number): void {
-    if (!this.ctx) return;
-
-    this.ctx.fillStyle = 'yellow';
-    this.ctx.font = '12px monospace';
-    this.ctx.fillText(`实体数量: ${gameState.entities.length}`, 10, 20);
-    this.ctx.fillText(`帧耗时: ${frameTime.toFixed(2)}ms`, 10, 35);
-    this.ctx.fillText(`FPS: ${(1000 / frameTime).toFixed(1)}`, 10, 50);
-  }
-
-  private stopGameLoop(): void {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
-    }
-  }
-
-  private showErrorModal(message: string): void {
-    // 创建错误提示模态框
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '20%';
-    modal.style.left = '50%';
-    modal.style.transform = 'translateX(-50%)';
-    modal.style.padding = '20px';
-    modal.style.background = 'rgba(255, 50, 50, 0.9)';
-    modal.style.color = 'white';
-    modal.style.borderRadius = '8px';
-    modal.textContent = message;
-    document.body.appendChild(modal);
   }
 }

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Creeps</title>
+    <meta name="description" content="Opinionated Vite Starter Template" />
+    <script type="module" crossorigin src="/assets/index-BzPZvHKj.js"></script>
+  </head>
+  <body>
+    <div style="position: relative">
+      <div class="ui" style="position: relative; width: 1200px">
+        <div class="console">
+          <div class="console-header">
+            <div
+              class="console-title"
+              style="
+                text-align: center;
+                height: 30px;
+                line-height: 24px;
+                font-size: 24px;
+              "
+            >
+              Creeps
+            </div>
+          </div>
+          <div
+            class="console-main"
+            style="
+              position: absolute;
+              right: 15px;
+              top: 36px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            "
+          >
+            <div class="item" style="display: flex">
+              <span style="color: #ffffff">旋转速度:</span>
+              <input
+                id="ROTATION_SPEED"
+                type="number"
+                style="
+                  text-align: center;
+                  color: #ffffff;
+                  background-color: transparent;
+                  border: none;
+                  outline: none;
+                "
+                step="0.01"
+              />
+            </div>
+
+            <div class="item" style="display: flex">
+              <span style="color: #ffffff">移动平滑:</span>
+              <input
+                id="MOVEMENT_SMOOTHING"
+                type="number"
+                style="
+                  text-align: center;
+                  color: #ffffff;
+                  background-color: transparent;
+                  border: none;
+                  outline: none;
+                "
+                step="0.01"
+              />
+            </div>
+
+            <div class="item" style="display: flex">
+              <span style="color: #ffffff">移动速度:</span>
+              <input
+                id="SPEED_INPUT"
+                type="number"
+                style="
+                  text-align: center;
+                  color: #ffffff;
+                  background-color: transparent;
+                  border: none;
+                  outline: none;
+                "
+                step="0.2"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <canvas
+        id="GameCanvas"
+        width="1200"
+        height="800"
+        style="background-color: #2b2b2b"
+      ></canvas>
+    </div>
+
+  </body>
+</html>

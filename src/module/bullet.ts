@@ -11,12 +11,12 @@ export default class Bullet extends Entity {
     x: number,
     y: number,
     direction: { x: number; y: number },
-    speed: number = 4,
-    radius: number = 3,
+    speed: number = 5,
+    radius: number = 2.5,
     damage: number = 10,
     lifeTime: number = 4
   ) {
-    super(x, y - radius, radius * 2, radius * 2);
+    super({ x, y: y - radius, width: radius * 2, height: radius * 2, speed, type: 'bullet' });
 
     // 标准化方向向量
     const magnitude = Math.hypot(direction.x, direction.y);
@@ -71,7 +71,7 @@ export default class Bullet extends Entity {
     this.lifeTime += gameState.deltaTime;
 
     if (this.lifeTime >= this.maxLifeTime) {
-      this.markForRemoval = true;
+      this.isMarkForRemoval = true;
     }
   }
 

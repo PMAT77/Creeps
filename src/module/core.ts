@@ -1,45 +1,7 @@
 import { Creep } from './creep';
-import Entity from './entity';
+import GameState from './game-state';
 
-// export interface Resource {
-//   [key: string]: HTMLImageElement
-// }
-
-// export interface ResourceLoader {
-//   assets: Resource;
-//   loadingCount: number;
-//   loadedCount: number;
-//   loadImage(key: string, src: string): void;
-//   checkCompletion(): void;
-// }
-
-export interface GameState {
-  isRunning: boolean;
-  entities: Entity[];
-  keys: { [key: string]: boolean };
-  deltaTime: number;
-  lastFrameTime: number;
-  updateDeltaTime: () => void;
-  addEntity(entity: Entity): void;
-}
-
-export const gameState: GameState = {
-  isRunning: false,
-  entities: [],
-  keys: {},
-  deltaTime: 0,
-  lastFrameTime: performance.now(),
-  updateDeltaTime() {
-    const now = performance.now();
-    // 修复1：确保时间差计算基于相邻两帧
-    this.deltaTime = (now - this.lastFrameTime) / 1000;
-    this.lastFrameTime = now; // 必须更新最后帧时间
-  },
-  addEntity(entity: Entity) {
-    this.entities.push(entity);
-  },
-}
-
+export const gameState = new GameState();
 
 // 游戏主类 - 封装相关功能
 export class GameController {
@@ -58,7 +20,7 @@ export class GameController {
 
     const creep = new Creep(400, 400, 15, 15);
     creep.draw(this.ctx);
-    gameState.entities.push(creep);
+    gameState.addEntity(creep);
   }
 
   /** 初始化实体 */
@@ -178,7 +140,7 @@ export class GameController {
 
   /** 游戏主循环 */
   private gameLoop(timestamp: number): void {
-    gameState.updateDeltaTime();
+    gameState.updateDeltaTime(timestamp);
 
     if (!this.canvas || !this.ctx) {
       this.stopGameLoop();
@@ -193,9 +155,10 @@ export class GameController {
     // 分批处理实体更新
     const BATCH_SIZE = 100;
     for (let i = 0; i < gameState.entities.length; i += BATCH_SIZE) {
-      gameState.entities = gameState.entities.filter(entity => {
-        return !entity.markForRemoval; // 保留未标记删除的实体
+      const newEntities = gameState.entities.filter(entity => {
+        return !entity.isMarkForRemoval; // 保留未标记删除的实体
       });
+      gameState.updateEntity(newEntities)
       const batch = gameState.entities.slice(i, i + BATCH_SIZE);
       batch.forEach(entity => {
         entity.update(this.canvas!, gameState.deltaTime); // 传递canvas参数

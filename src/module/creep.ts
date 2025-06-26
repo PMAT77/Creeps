@@ -2,15 +2,7 @@ import Bullet from "./bullet";
 import { gameState } from "./core";
 import Entity, { Position } from "./entity";
 
-// 转向速度
-const ROTATION_SPEED_INPUT = document.querySelector('#ROTATION_SPEED') as HTMLInputElement
-
-var ROTATION_SPEED = 0.15
-ROTATION_SPEED_INPUT.value = '0.15'
-ROTATION_SPEED_INPUT.onchange = () => {
-  ROTATION_SPEED = Number(ROTATION_SPEED_INPUT.value)
-}
-
+// 组件配置
 const COMPONENT_SPECS = {
   work: {
     color: '#fbe67f',
@@ -29,6 +21,9 @@ const COMPONENT_SPECS = {
 };
 
 export class Creep extends Entity {
+  health = 100; // 生命值
+  rotationSpeed = 0.2; // 转向速度
+
   private targetRotation = 0; // 目标角度 
   private currentRotation = 0; // 当前角度 
 
@@ -39,25 +34,21 @@ export class Creep extends Entity {
   private readonly breathSpeed = 6; // 呼吸速度
 
   private shootTimer = 0;
-  private readonly shootInterval = 0.1; // 射击间隔（毫秒）
+  private readonly shootInterval = 0.4; // 射击间隔（毫秒）
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
-    public health: number = 100,
-    public speed: number = 2,
+    health: number = 100,
+    speed: number = 2,
+    rotationSpeed = 0.2
   ) {
-    super(x, y, width, height);
+    super({ x, y, width, height, speed, type: 'creep' });
 
-    // 移动速度输入框
-    const SPEED_INPUT = document.querySelector('#SPEED_INPUT') as HTMLInputElement
-
-    SPEED_INPUT.value = '2'
-    SPEED_INPUT.onchange = () => {
-      this.speed = Number(SPEED_INPUT.value)
-    }
+    this.health = health;
+    this.rotationSpeed = rotationSpeed
   }
 
   get centerPoint(): Position {
@@ -67,7 +58,7 @@ export class Creep extends Entity {
     };
   }
 
-  /** 核心逻辑方法 */
+  /** 计算移动向量 */
   private calculateMovementSub(): Position {
     let dx = 0;
     let dy = 0;
@@ -96,7 +87,7 @@ export class Creep extends Entity {
   }
 
   /** 根据速度方向更新旋转方向 */
-  private updateRotation(direction: Position): void {
+  private updateMoveRotation(direction: Position): void {
     // 修正方向键检测逻辑
     const directionalKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
     const hasDirectionalInput = directionalKeys.some(k => gameState.keys[k]);
@@ -115,12 +106,12 @@ export class Creep extends Entity {
     const rawDiff = this.targetRotation - this.currentRotation;
     const angleDiff = Math.atan2(Math.sin(rawDiff), Math.cos(rawDiff));
     // 平滑旋转过渡
-    this.currentRotation += angleDiff * ROTATION_SPEED;
+    this.currentRotation += angleDiff * this.rotationSpeed;
     // 规范化角度范围
     this.currentRotation = ((this.currentRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   }
 
-  /** 独立转向控制 */
+  /** 方向键单独转向控制 */
   private updateDirectionalRotation() {
     const { keys } = gameState;
 
@@ -133,6 +124,13 @@ export class Creep extends Entity {
     if (keys.ArrowRight && keys.ArrowDown) this.targetRotation = Math.PI / 4;
     if (keys.ArrowLeft && keys.ArrowUp) this.targetRotation = Math.PI + Math.PI / 4;
     if (keys.ArrowLeft && keys.ArrowDown) this.targetRotation = Math.PI - Math.PI / 4;
+  }
+
+  /** 转向逻辑 */
+  private updateRotation() {
+    const direction = this.calculateMovementSub();
+    this.updateDirectionalRotation(); // 方向键转向
+    this.updateMoveRotation(direction); // 移动转向
   }
 
   /** 控制组件旋转 */
@@ -154,7 +152,6 @@ export class Creep extends Entity {
     // 新增呼吸动画逻辑 
     if (this.isIdle()) {
       this.breathPhase += gameState.deltaTime * this.breathSpeed;
-      console.log('breathPhase', this.breathPhase)
     }
   }
 
@@ -195,8 +192,10 @@ export class Creep extends Entity {
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#555555';
     ctx.stroke();
-
     ctx.restore();
+
+    // 控制组件旋转
+    this.applyRotation(ctx);
   }
 
   /** 绘制额外组件 */
@@ -230,7 +229,6 @@ export class Creep extends Entity {
   /** 创建子弹 */
   private createBullet(): void {
     const attackPos = this.getAttackComponentPosition();
-    console.log('attackPos', attackPos)
     gameState.addEntity(new Bullet(
       attackPos.x,
       attackPos.y,
@@ -242,12 +240,11 @@ export class Creep extends Entity {
     try {
       super.update(canvas, deltaTime);
 
-      // 更新呼吸动画
+      // 呼吸动画
       this.updateBreathAnimation();
 
-      const direction = this.calculateMovementSub();
-      this.updateDirectionalRotation(); // 新增转向控制
-      this.updateRotation(direction);
+      // 转向逻辑
+      this.updateRotation()
 
       this.shootTimer += deltaTime || 16.67; // 默认60FPS的帧时间 
       if (this.shootTimer >= this.shootInterval) {
@@ -263,11 +260,8 @@ export class Creep extends Entity {
     ctx.save();
     try {
       super.draw(ctx);
-
+      // 绘制本体
       this.drawBody(ctx);
-
-      // 控制组件旋转
-      this.applyRotation(ctx);
 
       // 绘制组件
       Object.keys(COMPONENT_SPECS).forEach(k =>

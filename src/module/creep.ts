@@ -49,6 +49,7 @@ export class Creep extends Entity {
 
     this.health = health;
     this.rotationSpeed = rotationSpeed
+    this.baseSize = width
   }
 
   get centerPoint(): Position {
@@ -161,7 +162,7 @@ export class Creep extends Entity {
 
     ctx.save();
     // 应用呼吸缩放（保持中心点）
-    const scale = 1 + Math.sin(this.breathPhase) * this.breathAmplitude / this.baseSize;
+    const scale = 1 + Math.sin(this.breathPhase) * (this.breathAmplitude / this.baseSize);
     ctx.translate(center.x, center.y);
     ctx.scale(scale, scale)
     ctx.translate(-center.x, -center.y);
@@ -170,7 +171,7 @@ export class Creep extends Entity {
     ctx.beginPath();
     ctx.arc(center.x, center.y, this.width / 2, 0, Math.PI * 2);
     ctx.fillStyle = '#555555';
-    ctx.fill();
+    ctx.fill(); ``
 
     // 能量容器壁
     ctx.beginPath();

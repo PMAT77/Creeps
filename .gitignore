@@ -1,1 +1,8 @@
-dist/*
+# 构建目录
+dist/* 
+# 依赖目录
+node_modules/
+# 环境变量文件
+.env
+# 编辑器目录
+.vscode/ 

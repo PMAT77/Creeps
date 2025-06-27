@@ -1,4 +1,4 @@
-import Bullet from "./bullet";
+import Bullet from "./bullet/bullet";
 import { gameState } from "./core";
 import Entity, { Position } from "./entity";
 
@@ -235,6 +235,15 @@ export class Creep extends Entity {
       attackPos.y,
       { x: Math.cos(this.currentRotation), y: Math.sin(this.currentRotation) }
     ));
+  }
+
+  handleCollision(other: Entity): void {
+    if (other.type === 'bullet') {
+      this.health -= (other as Bullet).damage;
+      if (this.health <= 0) {
+        this.isMarkForRemoval = true;
+      }
+    }
   }
 
   update(canvas?: HTMLCanvasElement, deltaTime?: number): void {

@@ -101,8 +101,8 @@ export default class Entity {
     this.targetPos.x += direction.x * this.speed;
     this.targetPos.y += direction.y * this.speed;
 
-    const canvasWidth = Number(canvas?.width) || 800;
-    const canvasHeight = Number(canvas?.height) || 600;
+    const canvasWidth = Number(canvas?.clientWidth) || 1200;
+    const canvasHeight = Number(canvas?.clientHeight) || 800;
 
     this.targetPos.x = Math.max(0, Math.min(canvasWidth - this.width, this.targetPos.x));
     this.targetPos.y = Math.max(0, Math.min(canvasHeight - this.height, this.targetPos.y));
@@ -110,6 +110,22 @@ export default class Entity {
     this.currentPos.x += (this.targetPos.x - this.currentPos.x) * MOVEMENT_SMOOTHING;
     this.currentPos.y += (this.targetPos.y - this.currentPos.y) * MOVEMENT_SMOOTHING;
     [this.x, this.y] = [this.currentPos.x, this.currentPos.y];
+  }
+
+  /** 碰撞检测方法 */
+  checkCollision(other: Entity): boolean {
+    const thisCenter = this.centerPoint;
+    const otherCenter = other.centerPoint;
+    const distance = Math.hypot(
+      thisCenter.x - otherCenter.x,
+      thisCenter.y - otherCenter.y
+    );
+    return distance < (this.width / 2 + other.width / 2);
+  }
+
+  /** 碰撞处理（子类可重写） */
+  handleCollision(other: Entity): void {
+    // 基础碰撞处理逻辑
   }
 
   update(canvas?: HTMLCanvasElement, deltaTime?: number): void {

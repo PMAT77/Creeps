@@ -166,6 +166,18 @@ export class GameController {
       });
     }
 
+    // 碰撞检测（双重循环优化版）
+    for (let i = 0; i < gameState.entities.length; i++) {
+      const entityA = gameState.entities[i];
+      for (let j = i + 1; j < gameState.entities.length; j++) {
+        const entityB = gameState.entities[j];
+        if (entityA.checkCollision(entityB)) {
+          entityA.handleCollision(entityB);
+          entityB.handleCollision(entityA);
+        }
+      }
+    }
+
     // 调试信息显示
     if (this.debugMode) {
       this.drawDebugInfo(performance.now() - startTime);

@@ -1,11 +1,11 @@
-import { gameState } from "./core";
-import Entity from "./entity";
+import { gameState } from "../core";
+import Entity from "../entity";
 
 export default class Bullet extends Entity {
   private readonly maxLifeTime: number; // 子弹最大存在时间
   private lifeTime: number; // 子弹已存在时间
-  private damage: number; // 子弹伤害
   private velocity: { x: number; y: number }; // 子弹速度向量
+  damage: number; // 子弹伤害
 
   constructor(
     x: number,

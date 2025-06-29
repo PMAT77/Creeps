@@ -1,4 +1,4 @@
-import Entity from "./entity";
+import Entity, { EntityType } from "./entity";
 
 export default class GameState {
   // 游戏是否运行
@@ -54,6 +54,11 @@ export default class GameState {
     return this.#entities.find(entity => entity.uniqId === uniqId) || null;
   }
 
+  /** 根据类型查询实体 */
+  findEntityByType(type: EntityType): Entity[] {
+    return this.#entities.filter(entity => entity.type === type) || [];
+  }
+
   updateEntity(entities: Entity[]) {
     this.#entities = entities;
   }
@@ -66,9 +71,21 @@ export default class GameState {
     this.#keys[key] = false;
   }
 
+  getNearbyEntities(entity: Entity, radius: number) {
+    return this.entities.filter(e =>
+      e !== entity &&
+      e.x < entity.x + entity.width + radius &&
+      e.x + e.width > entity.x - radius &&
+      e.y < entity.y + entity.height + radius &&
+      e.y + e.height > entity.y - radius
+    );
+  }
+
   /** 更新时间增量 */
   updateDeltaTime(currentTime: number) {
     this.#deltaTime = (currentTime - this.#lastTime) / 1000;
     this.#lastTime = currentTime;
   }
 }
+
+export const gameState = new GameState();

@@ -20,7 +20,7 @@ const COMPONENT_SPECS = {
   }
 };
 
-export class Creep extends Entity {
+export class Enemy extends Entity {
   health = 100; // 生命值
   rotationSpeed = 0.2; // 转向速度
 
@@ -102,6 +102,14 @@ export class Creep extends Entity {
         this.targetRotation = this.currentRotation;
       }
     }
+
+    // 优化角度差计算（使用最短路径）
+    const rawDiff = this.targetRotation - this.currentRotation;
+    const angleDiff = Math.atan2(Math.sin(rawDiff), Math.cos(rawDiff));
+    // 平滑旋转过渡
+    this.currentRotation += angleDiff * this.rotationSpeed;
+    // 规范化角度范围
+    this.currentRotation = ((this.currentRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   }
 
   /** 方向键单独转向控制 */
@@ -122,16 +130,8 @@ export class Creep extends Entity {
   /** 转向逻辑 */
   private updateRotation() {
     const direction = this.calculateMovementSub();
-    this.updateMoveRotation(direction); // 移动转向
     this.updateDirectionalRotation(); // 方向键转向
-
-    // 优化角度差计算（使用最短路径）
-    const rawDiff = this.targetRotation - this.currentRotation;
-    const angleDiff = Math.atan2(Math.sin(rawDiff), Math.cos(rawDiff));
-    // 平滑旋转过渡
-    this.currentRotation += angleDiff * this.rotationSpeed;
-    // 规范化角度范围
-    this.currentRotation = ((this.currentRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    this.updateMoveRotation(direction); // 移动转向
   }
 
   /** 控制组件旋转 */

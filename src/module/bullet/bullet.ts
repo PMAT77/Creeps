@@ -1,5 +1,5 @@
-import { gameState } from "../core";
 import Entity from "../entity";
+import { gameState } from "../game-state";
 
 export default class Bullet extends Entity {
   private readonly maxLifeTime: number; // 子弹最大存在时间
@@ -16,7 +16,7 @@ export default class Bullet extends Entity {
     damage: number = 10,
     lifeTime: number = 4
   ) {
-    super({ x, y: y - radius, width: radius * 2, height: radius * 2, speed, type: 'bullet' });
+    super({ x, y: y - radius, width: radius * 2, height: radius * 2, speed, type: 'Bullet' });
 
     // 标准化方向向量
     const magnitude = Math.hypot(direction.x, direction.y);

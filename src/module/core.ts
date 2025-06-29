@@ -1,7 +1,7 @@
 import { Creep } from './creep';
-import GameState from './game-state';
+import { Wall } from './environment/wall';
+import { gameState } from './game-state';
 
-export const gameState = new GameState();
 
 // 游戏主类 - 封装相关功能
 export class GameController {
@@ -14,7 +14,7 @@ export class GameController {
     this.initialize();
   }
 
-  private spawnInitialEntities(): void {
+  private creepInitialEntities(): void {
     if (!this.ctx) return;
     if (!this.canvas || !this.ctx) return;
 
@@ -23,13 +23,35 @@ export class GameController {
     gameState.addEntity(creep);
   }
 
+  private envInitialEntities(): void {
+    if (!this.ctx) return;
+    if (!this.canvas || !this.ctx) return;
+
+    const wall_01 = new Wall(400, 200, 40, 40)
+    wall_01.draw(this.ctx!)
+    gameState.addEntity(wall_01)
+
+    const wall_02 = new Wall(440, 200, 40, 40)
+    wall_02.draw(this.ctx!)
+    gameState.addEntity(wall_02)
+
+    const wall_03 = new Wall(480, 200, 40, 40)
+    wall_03.draw(this.ctx!)
+    gameState.addEntity(wall_03)
+
+    const wall_04 = new Wall(440, 160, 40, 40)
+    wall_04.draw(this.ctx!)
+    gameState.addEntity(wall_04)
+  }
+
   /** 初始化实体 */
   private async initialize(): Promise<void> {
     try {
       await this.waitForDOMReady();
       this.setupCanvas();
       this.setupEventListeners();
-      this.spawnInitialEntities();
+      this.creepInitialEntities();
+      this.envInitialEntities();
       this.animationId = requestAnimationFrame(ts => this.gameLoop(ts));
     } catch (error) {
       console.error('游戏初始化失败:', error);

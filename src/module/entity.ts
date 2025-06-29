@@ -1,4 +1,4 @@
-import { gameState } from "./core";
+import { gameState } from './game-state';
 
 export interface Position {
   x: number;
@@ -6,7 +6,7 @@ export interface Position {
 }
 
 // 实体类型
-export type EntityType = 'creep' | 'bullet';
+export type EntityType = 'Creep' | 'Bullet' | 'Environment';
 
 // 移动平滑系数
 const MOVEMENT_SMOOTHING = 0.1;
@@ -45,6 +45,7 @@ export default class Entity {
     this.speed = speed;
     this.targetPos = { x: Number(x), y: Number(y) };
     this.currentPos = { x: Number(x), y: Number(y) };
+    this.type = type;
 
     if (isNaN(this.x) || isNaN(this.y)) {
       console.error('坐标初始化异常', { x, y });
@@ -126,6 +127,7 @@ export default class Entity {
   /** 碰撞处理（子类可重写） */
   handleCollision(other: Entity): void {
     // 基础碰撞处理逻辑
+    console.log('发生碰撞！', other)
   }
 
   update(canvas?: HTMLCanvasElement, deltaTime?: number): void {
@@ -133,4 +135,4 @@ export default class Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void { }
-}
+} 

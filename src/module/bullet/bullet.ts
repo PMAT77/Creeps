@@ -1,6 +1,6 @@
+import { Creep } from "../creep";
 import Entity from "../entity";
 import { gameState } from "../game-state";
-import { Creep } from "../creep";
 
 // 修改子弹类，添加发射者属性
 export default class Bullet extends Entity {

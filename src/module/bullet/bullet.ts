@@ -1,21 +1,31 @@
 import Entity from "../entity";
 import { gameState } from "../game-state";
+<<<<<<< HEAD
 import { Creep } from "../creep";
 
 // 修改子弹类，添加发射者属性
+=======
+
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
 export default class Bullet extends Entity {
   private readonly maxLifeTime: number; // 子弹最大存在时间
   private lifeTime: number; // 子弹已存在时间
   private velocity: { x: number; y: number }; // 子弹速度向量
+<<<<<<< HEAD
   private shooter: Creep; // 发射者信息
 
+=======
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
   damage: number; // 子弹伤害
 
   constructor(
     x: number,
     y: number,
     direction: { x: number; y: number },
+<<<<<<< HEAD
     shooter: Creep,
+=======
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
     speed: number = 5,
     radius: number = 2.5,
     damage: number = 10,
@@ -33,12 +43,15 @@ export default class Bullet extends Entity {
     this.damage = damage;
     this.maxLifeTime = lifeTime;
     this.lifeTime = 0;
+<<<<<<< HEAD
     this.shooter = shooter;
   }
 
   // 添加获取发射者方法
   getShooter(): Creep {
     return this.shooter;
+=======
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
   }
 
   private drawBody(ctx: CanvasRenderingContext2D) {
@@ -76,12 +89,15 @@ export default class Bullet extends Entity {
     ctx.restore();
   }
 
+<<<<<<< HEAD
   handleCollision(other: Entity): void {
     if (this.getShooter().type !== 'Creep') {
       this.isMarkForRemoval = true;
     }
   }
 
+=======
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
   update(canvas?: HTMLCanvasElement): void {
     this.x += this.velocity.x;
     this.y += this.velocity.y;
@@ -95,6 +111,10 @@ export default class Bullet extends Entity {
   draw(ctx: CanvasRenderingContext2D): void {
     super.draw(ctx);
 
+<<<<<<< HEAD
     this.drawBody(ctx);
+=======
+    this.drawBody(ctx)
+>>>>>>> 1ccec42a1e8eff32db81e33e9841f475528886b4
   }
 }
